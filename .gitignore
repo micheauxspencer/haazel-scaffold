@@ -39,3 +39,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Claude Code user-local files
+.claude/settings.local.json
+.claude/launch.json
+
+# Generated assets (scaffold ships clean)
+public/images/
+public/assets/frames/
+public/assets/*.mp4

@@ -1,65 +1,143 @@
-import Image from "next/image";
+import { brand } from "@/lib/brand.config";
+import { client } from "@/lib/sanity/client";
+import { getRecentPostsQuery } from "@/lib/sanity/queries";
+import type { BlogPost } from "@/types/sanity";
+import { HeroSection } from "@/components/sections/HeroSection";
+import { AboutSection } from "@/components/sections/AboutSection";
+import { ServicesGrid } from "@/components/sections/ServicesGrid";
+import { StatsCounter } from "@/components/sections/StatsCounter";
+import { TestimonialsSection } from "@/components/sections/TestimonialsSection";
+import { BlogPreviewSection } from "@/components/sections/BlogPreviewSection";
+import { CTASection } from "@/components/sections/CTASection";
+const demoServices = [
+  {
+    icon: "Palette",
+    title: "Web Design",
+    description:
+      "Cinematic, scroll-driven websites that captivate visitors and elevate your brand presence.",
+    href: "/services/web-design",
+  },
+  {
+    icon: "Code",
+    title: "Web Development",
+    description:
+      "Fast, accessible, and future-proof builds using Next.js, React, and modern tooling.",
+    href: "/services/web-development",
+  },
+  {
+    icon: "Sparkles",
+    title: "Brand Identity",
+    description:
+      "Cohesive visual systems from logo to typography that make your brand unmistakable.",
+    href: "/services/brand-identity",
+  },
+  {
+    icon: "Search",
+    title: "SEO Optimization",
+    description:
+      "Technical SEO, structured data, and content strategy that drives organic traffic.",
+    href: "/services/seo-optimization",
+  },
+  {
+    icon: "BarChart3",
+    title: "Conversion Strategy",
+    description:
+      "Data-informed layouts and CTA architecture that turn visitors into customers.",
+    href: "/services/conversion-strategy",
+  },
+  {
+    icon: "MonitorSmartphone",
+    title: "Responsive Design",
+    description:
+      "Pixel-perfect experiences across every device and screen size, no compromises.",
+    href: "/services/responsive-design",
+  },
+];
 
-export default function Home() {
+const demoStats = [
+  { value: 50, suffix: "+", label: "Projects delivered" },
+  { value: 4.9, label: "Google rating", decimals: 1 },
+  { value: 98, suffix: "%", label: "Client retention" },
+  { value: 3, suffix: "x", label: "Avg. conversion lift" },
+];
+
+const demoTestimonials = [
+  {
+    quote:
+      "They transformed our online presence completely. The cinematic scrolling and bold design tripled our lead generation in three months.",
+    name: "Sarah Chen",
+    role: "CMO, Apex Ventures",
+  },
+  {
+    quote:
+      "Working with this team felt effortless. They nailed our brand voice and delivered a site that actually converts, not just looks pretty.",
+    name: "Marcus Rivera",
+    role: "Founder, Riviera Health",
+  },
+  {
+    quote:
+      "Our new website loads in under a second and ranks on page one for our top keywords. The ROI has been incredible.",
+    name: "Emily Nakamura",
+    role: "Director of Marketing, Solstice Co.",
+  },
+];
+
+export default async function HomePage() {
+  const posts: BlogPost[] = await client
+    .fetch<BlogPost[]>(getRecentPostsQuery, { limit: 3 })
+    .catch(() => []);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    <>
+      <HeroSection
+        variant="parallax"
+        headline={brand.client.tagline}
+        subheadline={brand.client.description}
+        backgroundImage="/images/hero-bg.jpg"
+        ctas={[
+          { label: "View Our Work", href: "/services", variant: "default" },
+          { label: "Get in Touch", href: "/contact", variant: "outline" },
+        ]}
+      />
+
+      <AboutSection
+        heading={`Why ${brand.client.name}?`}
+        description={`We build cinematic, scroll-driven websites for ambitious brands. Every pixel, every interaction, every line of code is crafted to convert visitors into customers.\n\nOur approach blends bold design systems with conversion-focused architecture. No templates. No shortcuts. Just work that moves the needle.`}
+        imageSrc="/images/about-preview.jpg"
+        imageAlt={`${brand.client.name} team at work`}
+        stats={[
+          { value: 50, suffix: "+", label: "Projects launched" },
+          { value: 98, suffix: "%", label: "Client satisfaction" },
+          { value: 3, suffix: "x", label: "Avg. conversion lift" },
+        ]}
+      />
+
+      <ServicesGrid
+        heading="What we do"
+        subtitle="End-to-end digital services for brands that refuse to blend in."
+        services={demoServices}
+        columns={3}
+      />
+
+      <StatsCounter
+        heading="Results that speak"
+        stats={demoStats}
+      />
+
+      <TestimonialsSection
+        heading="What our clients say"
+        subtitle="Real results from real partnerships."
+        testimonials={demoTestimonials}
+      />
+
+      <BlogPreviewSection posts={posts} heading="Latest from the blog" />
+
+      <CTASection
+        heading="Ready to build something cinematic?"
+        description="Let's turn your vision into a scroll-stopping digital experience."
+        ctaLabel="Start a Project"
+        ctaHref="/contact"
+      />
+    </>
   );
 }
