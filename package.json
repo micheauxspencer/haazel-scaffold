@@ -5,7 +5,14 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "tokens:apply": "tsx scripts/apply-tokens.ts",
+    "tokens:check": "tsx scripts/apply-tokens.ts --check",
+    "prune": "tsx scripts/prune-site.ts",
+    "gen:image": "tsx scripts/gen-image.ts",
+    "gen:video": "tsx scripts/gen-video.ts",
+    "frames": "tsx scripts/extract-frames.ts",
+    "check:catalog": "tsx scripts/check-catalog.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.0",
@@ -31,6 +38,8 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "culori": "^4.0.1",
+    "tsx": "^4.19.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "tailwindcss": "^4",

@@ -1,0 +1,130 @@
+{
+  "version": 1,
+  "meta": {
+    "name": "Fixture Light SaaS",
+    "slug": "fixture-light-saas",
+    "domain": "fixture-saas.example.com",
+    "archetype": "saas",
+    "colorScheme": "light",
+    "generator": "haazel@0.2.0"
+  },
+  "colors": {
+    "semantic": {
+      "light": {
+        "background": "#FCFBF8",
+        "foreground": "#17181C",
+        "card": "#FFFFFF",
+        "cardForeground": "#17181C",
+        "popover": "#FFFFFF",
+        "popoverForeground": "#17181C",
+        "primary": "#4F46E5",
+        "primaryForeground": "#FFFFFF",
+        "secondary": "#EEF0F4",
+        "secondaryForeground": "#33363E",
+        "muted": "#F2F3F6",
+        "mutedForeground": "#6B7078",
+        "accent": "#E8FF66",
+        "accentForeground": "#17181C",
+        "destructive": "#DC2626",
+        "border": "#E4E6EB",
+        "input": "#E4E6EB",
+        "ring": "#4F46E5"
+      },
+      "dark": {
+        "background": "#0E0F13",
+        "foreground": "#F4F5F7",
+        "card": "#16181E",
+        "cardForeground": "#F4F5F7",
+        "popover": "#14161B",
+        "popoverForeground": "#F4F5F7",
+        "primary": "#6C63FF",
+        "primaryForeground": "#0E0F13",
+        "secondary": "#1E2129",
+        "secondaryForeground": "#D6D9E0",
+        "muted": "#191C23",
+        "mutedForeground": "#9BA1AC",
+        "accent": "#E8FF66",
+        "accentForeground": "#0E0F13",
+        "destructive": "#EF4444",
+        "border": "#262A33",
+        "input": "#262A33",
+        "ring": "#6C63FF"
+      }
+    }
+  },
+  "typography": {
+    "fonts": {
+      "display": {
+        "family": "Sora",
+        "provider": "google",
+        "weights": [600, 700],
+        "fallback": "system-ui, sans-serif"
+      },
+      "heading": {
+        "family": "Sora",
+        "provider": "google",
+        "weights": [600],
+        "fallback": "system-ui, sans-serif"
+      },
+      "body": {
+        "family": "Figtree",
+        "provider": "google",
+        "weights": [400, 500],
+        "fallback": "system-ui, sans-serif"
+      },
+      "mono": {
+        "family": "IBM Plex Mono",
+        "provider": "google",
+        "weights": [400, 500],
+        "fallback": "ui-monospace, monospace"
+      }
+    },
+    "scale": {
+      "hero": { "size": "clamp(3rem, 7vw, 6rem)", "lineHeight": 1.02, "font": "display", "weight": 700, "tracking": "-0.03em" },
+      "display": { "size": "clamp(2.5rem, 5vw, 4.5rem)", "lineHeight": 1.05, "font": "display", "weight": 700 },
+      "heading": { "size": "clamp(1.75rem, 3vw, 2.75rem)", "lineHeight": 1.15, "font": "heading", "weight": 600 },
+      "subheading": { "size": "clamp(1.125rem, 1.6vw, 1.375rem)", "lineHeight": 1.4, "font": "heading", "weight": 600 },
+      "body": { "size": "1rem", "lineHeight": 1.65, "font": "body", "weight": 400 },
+      "caption": { "size": "0.8125rem", "lineHeight": 1.4, "font": "body", "weight": 500 },
+      "overline": { "size": "0.75rem", "lineHeight": 1.2, "font": "mono", "weight": 500, "tracking": "0.18em", "transform": "uppercase" }
+    }
+  },
+  "shape": { "radius": "0.75rem", "borderWidth": "1px" },
+  "spacing": {
+    "grid": 8,
+    "sectionGap": "clamp(5rem, 10vw, 8rem)",
+    "contentGap": "3.5rem",
+    "elementGap": "1.25rem",
+    "tightGap": "0.5rem",
+    "containerMax": "72rem",
+    "gutter": "clamp(1.25rem, 4vw, 3rem)"
+  },
+  "motion": {
+    "policy": "restrained",
+    "easing": { "standard": "cubic-bezier(0.16, 1, 0.3, 1)", "exit": "cubic-bezier(0.7, 0, 0.84, 0)" },
+    "durations": { "fast": "120ms", "base": "240ms", "slow": "450ms", "reveal": "800ms" },
+    "reducedMotion": "reduce",
+    "smoothScroll": false,
+    "ambient": { "cursorGlow": false, "noiseOverlay": { "enabled": false } },
+    "bannedModules": ["CursorGlow", "GlitchEffect", "MeshGradient", "ImageTrail", "CurtainReveal"]
+  },
+  "voice": {
+    "tone": ["clear", "confident", "product-led"],
+    "adjectives": ["fast", "reliable", "focused"],
+    "bannedPhrases": ["game-changer", "revolutionize", "synergy", "unleash"],
+    "writingStyle": "Benefit-first, concrete. Numbers over adjectives. Short paragraphs."
+  },
+  "imagery": {
+    "style": "abstract",
+    "formulas": {
+      "image": "{style} product illustration, {scene}, {grade}, clean geometry, {avoid}"
+    },
+    "subjects": ["abstract data landscapes", "soft 3D geometric compositions"],
+    "lighting": ["soft studio"],
+    "cameras": ["n/a"],
+    "lenses": ["n/a"],
+    "grade": "paper white with indigo and lime accents",
+    "avoid": ["no text", "no watermarks", "no fake UI screenshots"],
+    "colorTemperature": "neutral"
+  }
+}

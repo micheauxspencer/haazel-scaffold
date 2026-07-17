@@ -37,7 +37,7 @@ export const brand: BrandConfig = {
   },
 
   // ─── Colors ────────────────────────────────────────────────
-  // These generate Tailwind theme tokens via setup-brand.ts
+  // HAAZEL:COLORS — written by `npm run tokens:apply`; do not hand-edit inside markers
   colors: {
     primary: "#6D28D9",        // Deep violet
     primaryDark: "#4C1D95",
@@ -52,9 +52,10 @@ export const brand: BrandConfig = {
     cardForeground: "#FAFAFA",
     border: "#27272A",
   },
+  // /HAAZEL:COLORS
 
   // ─── Typography ────────────────────────────────────────────
-  // Google Font names — loaded in layout.tsx via next/font/google
+  // HAAZEL:TYPOGRAPHY — written by `npm run tokens:apply`; Google Font names, loaded in layout.tsx
   typography: {
     display: "Space Grotesk",   // Hero headlines
     heading: "Inter",           // Section headings
@@ -62,13 +63,17 @@ export const brand: BrandConfig = {
     accent: "JetBrains Mono",   // Code, stats, accents
     mono: "JetBrains Mono",
   },
+  // /HAAZEL:TYPOGRAPHY
 
   // ─── Style Preset ──────────────────────────────────────────
   // Controls animation intensity, layout patterns, and component variants
   // Options: cinematic | minimalist | brutalist | luxury | corporate | creative | ecommerce
+  // HAAZEL:PRESET — written by `npm run tokens:apply`
   stylePreset: "cinematic",
+  // /HAAZEL:PRESET
 
   // ─── Voice & Tone ──────────────────────────────────────────
+  // HAAZEL:VOICE — written by `npm run tokens:apply`
   voice: {
     tone: ["confident", "direct", "modern"],
     adjectives: ["bold", "cinematic", "scroll-driven", "conversion-focused"],
@@ -83,6 +88,7 @@ export const brand: BrandConfig = {
     writingStyle:
       "Direct and punchy. Short paragraphs. No fluff. Lead with value. Use active voice.",
   },
+  // /HAAZEL:VOICE
 
   // ─── Sanity CMS ────────────────────────────────────────────
   sanity: {
@@ -118,7 +124,8 @@ export const brand: BrandConfig = {
     schedule: "0 9 * * 2,4", // Tuesdays and Thursdays at 9am
   },
 
-  // ─── Image Generation (FAL.ai) ────────────────────────────
+  // ─── Image Generation ─────────────────────────────────────
+  // HAAZEL:IMAGERY — written by `npm run tokens:apply`
   imagery: {
     style: "photorealistic",
     subjects: [
@@ -140,6 +147,7 @@ export const brand: BrandConfig = {
     ],
     colorTemperature: "warm neutral",
   },
+  // /HAAZEL:IMAGERY
 
   // ─── SEO ───────────────────────────────────────────────────
   seo: {

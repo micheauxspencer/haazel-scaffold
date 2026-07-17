@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { brand } from "@/lib/brand.config";
 
+// HAAZEL:NAV — rewritten by `npm run prune` to match kept routes
 const navLinks = [
   { label: "Home", href: "/" },
   { label: "About", href: "/about" },
@@ -8,6 +9,7 @@ const navLinks = [
   { label: "Blog", href: "/blog" },
   { label: "Contact", href: "/contact" },
 ];
+// /HAAZEL:NAV
 
 const socialIcons: Record<string, string> = {
   instagram: "Instagram",

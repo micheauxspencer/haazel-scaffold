@@ -1,24 +1,30 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useReducedMotion } from "@/lib/motion/useReducedMotion";
 
 interface TextMaskRevealProps {
   text: string;
+  /** Any CSS color. Defaults to the site's primary token. */
   fillColor?: string;
+  /** Any CSS color. Defaults to a subtle foreground mix. */
   strokeColor?: string;
   className?: string;
 }
 
 export default function TextMaskReveal({
   text,
-  fillColor = "#8b5cf6",
-  strokeColor = "rgba(255,255,255,0.15)",
+  fillColor = "var(--primary)",
+  strokeColor = "color-mix(in oklab, var(--foreground) 15%, transparent)",
   className = "",
 }: TextMaskRevealProps) {
   const sectionRef = useRef<HTMLDivElement>(null);
   const filledRef = useRef<HTMLDivElement>(null);
+  const reduced = useReducedMotion();
 
   useEffect(() => {
+    if (reduced) return; // settled state rendered below
+
     let ctx: { revert: () => void } | null = null;
 
     const init = async () => {
@@ -46,7 +52,7 @@ export default function TextMaskReveal({
 
     init();
     return () => { ctx?.revert(); };
-  }, []);
+  }, [reduced]);
 
   const textStyles: React.CSSProperties = {
     fontSize: "clamp(3rem, 10vw, 10rem)",
@@ -83,7 +89,7 @@ export default function TextMaskReveal({
           {text}
         </div>
 
-        {/* Filled copy revealed by clip-path */}
+        {/* Filled copy revealed by clip-path (fully visible when reduced motion) */}
         <div
           ref={filledRef}
           style={{
@@ -92,8 +98,8 @@ export default function TextMaskReveal({
             inset: 0,
             color: fillColor,
             WebkitTextFillColor: fillColor,
-            clipPath: "inset(100% 0 0 0)",
-            willChange: "clip-path",
+            clipPath: reduced ? "none" : "inset(100% 0 0 0)",
+            willChange: reduced ? undefined : "clip-path",
           }}
         >
           {text}
