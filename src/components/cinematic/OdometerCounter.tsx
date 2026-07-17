@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useReducedMotion } from "@/lib/motion/useReducedMotion";
+import { EASE_STANDARD_CSS } from "@/lib/motion/constants";
 
 interface OdometerCounterProps {
   value: number;
@@ -14,10 +16,12 @@ function DigitRoller({
   digit,
   delay,
   active,
+  reduced,
 }: {
   digit: number;
   delay: number;
   active: boolean;
+  reduced: boolean;
 }) {
   return (
     <span
@@ -33,9 +37,10 @@ function DigitRoller({
         style={{
           display: "block",
           transform: active ? `translateY(${-digit * 1}em)` : "translateY(0em)",
-          transition: active
-            ? `transform 1.2s cubic-bezier(.16, 1, .3, 1) ${delay}s`
-            : "none",
+          transition:
+            active && !reduced
+              ? `transform 1.2s ${EASE_STANDARD_CSS} ${delay}s`
+              : "none",
           willChange: "transform",
         }}
       >
@@ -66,8 +71,15 @@ export default function OdometerCounter({
 }: OdometerCounterProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(false);
+  const reduced = useReducedMotion();
 
   useEffect(() => {
+    if (reduced) {
+      // Final value immediately, no scroll wait and no roll.
+      setActive(true);
+      return;
+    }
+
     let ctx: { revert: () => void } | null = null;
 
     const init = async () => {
@@ -87,9 +99,11 @@ export default function OdometerCounter({
 
     init();
     return () => { ctx?.revert(); };
-  }, []);
+  }, [reduced]);
 
   const digits = String(value).split("");
+  const fadeTransition = (delay: string) =>
+    reduced ? "none" : `opacity 0.6s ${EASE_STANDARD_CSS} ${delay}`;
 
   return (
     <div ref={containerRef} className={className} style={{ textAlign: "center" }}>
@@ -106,7 +120,7 @@ export default function OdometerCounter({
         }}
       >
         {prefix && (
-          <span style={{ opacity: active ? 1 : 0, transition: "opacity 0.6s ease 0.2s" }}>
+          <span style={{ opacity: active ? 1 : 0, transition: fadeTransition("0.2s") }}>
             {prefix}
           </span>
         )}
@@ -116,6 +130,7 @@ export default function OdometerCounter({
             digit={parseInt(d, 10)}
             delay={i * 0.12}
             active={active}
+            reduced={reduced}
           />
         ))}
         {suffix && (
@@ -125,7 +140,7 @@ export default function OdometerCounter({
               fontWeight: 400,
               marginLeft: "0.1em",
               opacity: active ? 1 : 0,
-              transition: "opacity 0.6s ease 0.8s",
+              transition: fadeTransition("0.8s"),
             }}
           >
             {suffix}
@@ -141,7 +156,7 @@ export default function OdometerCounter({
             letterSpacing: "0.05em",
             textTransform: "uppercase",
             opacity: active ? 0.6 : 0,
-            transition: "opacity 0.6s ease 1s",
+            transition: fadeTransition("1s"),
             color: "inherit",
           }}
         >

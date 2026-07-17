@@ -8,9 +8,10 @@ import type { BrandConfig } from "@/types/brand";
  * image generation prompts, auto-blog configuration, and more.
  *
  * To set up a new client:
- * 1. Fill out this config with client brand values
- * 2. Run: npx tsx scripts/setup-brand.ts
- * 3. The setup script generates globals.css theme, layout metadata, etc.
+ * 1. Generate design/tokens.json (haazel-design-system skill)
+ * 2. Run: npm run tokens:apply
+ *    — rewrites the HAAZEL regions below plus globals.css and layout.tsx fonts.
+ * 3. Hand-edit the non-generated sections (client, sanity, blog, seo).
  */
 export const brand: BrandConfig = {
   // ─── Identity ──────────────────────────────────────────────

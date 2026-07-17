@@ -1,8 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useCallback, type ReactNode } from "react";
+import { usePointerFine } from "@/lib/motion/usePointerFine";
+import { useReducedMotion } from "@/lib/motion/useReducedMotion";
+import { EASE_STANDARD_CSS } from "@/lib/motion/constants";
 
 interface ImageTrailProps {
+  /** Any CSS colors. Default palette derives from the site's tokens so it re-themes with brand colors. */
   colors?: string[];
   poolSize?: number;
   threshold?: number;
@@ -14,14 +18,14 @@ interface ImageTrailProps {
 
 export default function ImageTrail({
   colors = [
-    "#a8748e",
-    "#748ea8",
-    "#8ea874",
-    "#a8a074",
-    "#74a8a0",
-    "#a07448",
-    "#7448a0",
-    "#48a074",
+    "var(--primary)",
+    "var(--accent)",
+    "var(--secondary)",
+    "color-mix(in oklab, var(--primary) 70%, var(--accent))",
+    "color-mix(in oklab, var(--accent) 70%, var(--primary))",
+    "var(--destructive)",
+    "color-mix(in oklab, var(--primary) 50%, var(--foreground))",
+    "color-mix(in oklab, var(--accent) 60%, var(--muted))",
   ],
   poolSize = 20,
   threshold = 60,
@@ -34,9 +38,15 @@ export default function ImageTrail({
   const poolRef = useRef<HTMLDivElement[]>([]);
   const idxRef = useRef(0);
   const lastRef = useRef({ x: 0, y: 0 });
+  const pointerFine = usePointerFine();
+  const reduced = useReducedMotion();
+  const active = pointerFine && !reduced;
 
-  // Create pool on mount
+  // Create pool on mount (fine pointer + motion allowed only — no point
+  // spawning an off-screen DOM pool for a trail that can never render)
   useEffect(() => {
+    if (!active) return;
+
     const area = areaRef.current;
     if (!area) return;
 
@@ -65,7 +75,7 @@ export default function ImageTrail({
       poolRef.current.forEach((el) => el.remove());
       poolRef.current = [];
     };
-  }, [poolSize, colors, itemWidth, itemHeight]);
+  }, [poolSize, colors, itemWidth, itemHeight, active]);
 
   const spawn = useCallback(
     (x: number, y: number) => {
@@ -82,7 +92,7 @@ export default function ImageTrail({
 
       // Force reflow then animate out
       el.offsetHeight;
-      el.style.transition = "opacity 0.8s ease 0.3s, transform 0.8s ease";
+      el.style.transition = `opacity 0.8s ${EASE_STANDARD_CSS} 0.3s, transform 0.8s ${EASE_STANDARD_CSS}`;
       el.style.opacity = "0";
       el.style.transform = `scale(0.6) rotate(${Math.random() * 30 - 15}deg)`;
     },
@@ -105,7 +115,7 @@ export default function ImageTrail({
     <div
       ref={areaRef}
       className={className}
-      onMouseMove={onMouseMove}
+      onMouseMove={active ? onMouseMove : undefined}
       style={{
         position: "relative",
         minHeight: "80vh",
@@ -113,7 +123,7 @@ export default function ImageTrail({
         alignItems: "center",
         justifyContent: "center",
         overflow: "hidden",
-        cursor: "none",
+        cursor: active ? "none" : "default",
       }}
     >
       <div style={{ position: "relative", zIndex: 2, pointerEvents: "none" }}>

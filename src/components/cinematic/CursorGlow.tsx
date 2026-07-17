@@ -1,8 +1,11 @@
 "use client";
 
 import { useEffect, useRef, type ReactNode } from "react";
+import { usePointerFine } from "@/lib/motion/usePointerFine";
+import { useReducedMotion } from "@/lib/motion/useReducedMotion";
 
 interface CursorGlowProps {
+  /** Any CSS color. Defaults to a subtle primary-token mix. */
   color?: string;
   size?: number;
   className?: string;
@@ -10,7 +13,7 @@ interface CursorGlowProps {
 }
 
 export default function CursorGlow({
-  color = "rgba(79, 143, 255, 0.12)",
+  color = "color-mix(in oklab, var(--primary) 12%, transparent)",
   size = 500,
   className,
   children,
@@ -19,11 +22,12 @@ export default function CursorGlow({
   const mouseRef = useRef({ x: 0, y: 0 });
   const glowPosRef = useRef({ x: 0, y: 0 });
   const rafRef = useRef<number>(0);
+  const pointerFine = usePointerFine();
+  const reduced = useReducedMotion();
+  const active = pointerFine && !reduced;
 
   useEffect(() => {
-    const isTouchDevice =
-      "ontouchstart" in window || navigator.maxTouchPoints > 0;
-    if (isTouchDevice) return;
+    if (!active) return; // touch or reduced motion: no glow layer; children render normally
 
     const glow = glowRef.current;
     if (!glow) return;
@@ -51,27 +55,29 @@ export default function CursorGlow({
       window.removeEventListener("mousemove", onMouseMove);
       cancelAnimationFrame(rafRef.current);
     };
-  }, [size]);
+  }, [size, active]);
 
   return (
     <div className={className} style={{ position: "relative" }}>
-      <div
-        ref={glowRef}
-        aria-hidden
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          width: size,
-          height: size,
-          borderRadius: "50%",
-          background: `radial-gradient(circle, ${color} 0%, transparent 70%)`,
-          pointerEvents: "none",
-          zIndex: 1,
-          willChange: "transform",
-          transition: "opacity 0.3s",
-        }}
-      />
+      {active && (
+        <div
+          ref={glowRef}
+          aria-hidden
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: size,
+            height: size,
+            borderRadius: "50%",
+            background: `radial-gradient(circle, ${color} 0%, transparent 70%)`,
+            pointerEvents: "none",
+            zIndex: 1,
+            willChange: "transform",
+            transition: "opacity 0.3s",
+          }}
+        />
+      )}
       {children}
     </div>
   );

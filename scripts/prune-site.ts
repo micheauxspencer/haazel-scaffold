@@ -75,10 +75,14 @@ function main() {
     process.exit(1);
   }
 
-  const keepRaw = args[keepFlag + 1];
-  const keep = new Set(
-    keepRaw === "none" ? [] : keepRaw.split(",").map((s) => s.trim()).filter(Boolean),
-  );
+  // PowerShell splits `a,b` into separate argv entries — gather every value
+  // after --keep up to the next flag, then split on commas/whitespace.
+  const keepValues: string[] = [];
+  for (let i = keepFlag + 1; i < args.length && !args[i].startsWith("--"); i++) {
+    keepValues.push(...args[i].split(/[,\s]+/));
+  }
+  const cleaned = keepValues.map((s) => s.trim()).filter(Boolean);
+  const keep = new Set(cleaned.filter((s) => s !== "none" && s !== "home"));
   for (const name of keep) {
     if (!PRUNABLE[name]) {
       console.error(`Unknown route "${name}". Prunable: ${Object.keys(PRUNABLE).join(", ")}`);
@@ -171,8 +175,18 @@ function main() {
     }
   }
 
-  // 5. Leftover references to pruned routes
-  const currentFiles = walk(path.join(ROOT, "src"), [".tsx", ".ts"]);
+  // 5. Leftover references to pruned routes.
+  // In dry-run, skip files that --write would delete or rewrite anyway —
+  // the post-write scan is the exact one.
+  const rewrittenFiles = new Set(
+    [layoutPath, footerPath, siteRoutesPath].map((p) => path.resolve(p)),
+  );
+  const currentFiles = walk(path.join(ROOT, "src"), [".tsx", ".ts"]).filter((f) => {
+    if (write) return true;
+    const abs = path.resolve(f);
+    if (rewrittenFiles.has(abs)) return false;
+    return !dirsToDelete.some((d) => abs.startsWith(path.resolve(d) + path.sep));
+  });
   const warnings: string[] = [];
   for (const r of prune) {
     const needle = `"/${r}`;

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type ElementType } from "react";
+import { useReducedMotion } from "@/lib/motion/useReducedMotion";
 
 interface TextScrambleProps {
   text: string;
@@ -23,6 +24,7 @@ export default function TextScramble({
 }: TextScrambleProps) {
   const Tag = as as ElementType;
   const ref = useRef<HTMLElement>(null);
+  const reduced = useReducedMotion();
   const [display, setDisplay] = useState(
     text
       .split("")
@@ -32,6 +34,11 @@ export default function TextScramble({
   const hasAnimated = useRef(false);
 
   useEffect(() => {
+    if (reduced) {
+      setDisplay(text); // final text immediately, no scramble loop
+      return;
+    }
+
     if (!triggerOnScroll) {
       runScramble();
       return;
@@ -64,7 +71,7 @@ export default function TextScramble({
       ctx?.revert();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [triggerOnScroll, text]);
+  }, [reduced, triggerOnScroll, text]);
 
   function runScramble() {
     const letters = text.split("");

@@ -1,6 +1,7 @@
 "use client";
 
 import { type ElementType } from "react";
+import { useReducedMotion } from "@/lib/motion/useReducedMotion";
 
 interface GradientStrokeTextProps {
   text: string;
@@ -15,13 +16,21 @@ interface GradientStrokeTextProps {
 export default function GradientStrokeText({
   text,
   variant = "stroke",
-  colors = ["#c8a97e", "#5eadb5", "#a8748e", "#e85d3a", "#4f46e5", "#c8a97e"],
+  colors = [
+    "var(--chart-1)",
+    "var(--chart-2)",
+    "var(--chart-3)",
+    "var(--chart-4)",
+    "var(--chart-5)",
+    "var(--chart-1)",
+  ],
   as = "h2",
   strokeWidth = 2,
   speed = 6,
   className = "",
 }: GradientStrokeTextProps) {
   const Tag = as as ElementType;
+  const reduced = useReducedMotion();
   const uid = `gs-${text.replace(/\s+/g, "").slice(0, 8).toLowerCase()}`;
   const gradient = colors.join(", ");
 
@@ -44,10 +53,13 @@ export default function GradientStrokeText({
             lineHeight: 0.95,
             background: `linear-gradient(135deg, ${gradient})`,
             backgroundSize: "200% 200%",
+            backgroundPosition: reduced ? "0% 50%" : undefined,
             WebkitBackgroundClip: "text",
             backgroundClip: "text",
             WebkitTextFillColor: "transparent",
-            animation: `gradShift-${uid} ${speed * 0.67}s ease infinite`,
+            animation: reduced
+              ? undefined
+              : `gradShift-${uid} ${speed * 0.67}s ease infinite`,
             userSelect: "none",
           }}
         >
@@ -78,10 +90,11 @@ export default function GradientStrokeText({
           WebkitTextStroke: `${strokeWidth}px currentColor`,
           background: `linear-gradient(90deg, ${gradient})`,
           backgroundSize: "300% 100%",
+          backgroundPosition: reduced ? "0% 50%" : undefined,
           WebkitBackgroundClip: "text",
           backgroundClip: "text",
           WebkitTextFillColor: "transparent",
-          animation: `gradMove-${uid} ${speed}s linear infinite`,
+          animation: reduced ? undefined : `gradMove-${uid} ${speed}s linear infinite`,
           userSelect: "none",
         }}
       >

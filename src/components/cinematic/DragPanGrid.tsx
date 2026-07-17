@@ -1,6 +1,8 @@
 "use client";
 
 import { useRef, useCallback, useState, type ReactNode } from "react";
+import { useReducedMotion } from "@/lib/motion/useReducedMotion";
+import { EASE_STANDARD_CSS } from "@/lib/motion/constants";
 
 interface PanItem {
   x: number;
@@ -30,7 +32,12 @@ export default function DragPanGrid({
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const currentRef = useRef({ x: 0, y: 0 });
   const [hintVisible, setHintVisible] = useState(true);
+  const reduced = useReducedMotion();
 
+  // Drag-to-pan is direct 1:1 pointer manipulation (not an ambient hover
+  // effect) and works identically for touch and mouse via Pointer Events,
+  // so it stays fully interactive regardless of pointer type or reduced
+  // motion — only the (otherwise unused) item transition below is zeroed.
   const onPointerDown = useCallback((e: React.PointerEvent) => {
     dragging.current = true;
     startRef.current = {
@@ -65,8 +72,8 @@ export default function DragPanGrid({
         position: "relative",
         overflow: "hidden",
         cursor: dragging.current ? "grabbing" : "grab",
-        borderTop: "1px solid rgba(255,255,255,0.06)",
-        borderBottom: "1px solid rgba(255,255,255,0.06)",
+        borderTop: "1px solid color-mix(in oklab, var(--foreground) 6%, transparent)",
+        borderBottom: "1px solid color-mix(in oklab, var(--foreground) 6%, transparent)",
         touchAction: "none",
       }}
     >
@@ -78,7 +85,7 @@ export default function DragPanGrid({
             left: "50%",
             transform: "translate(-50%, -50%)",
             fontSize: "14px",
-            color: "rgba(255,255,255,0.4)",
+            color: "var(--muted-foreground)",
             pointerEvents: "none",
             zIndex: 10,
           }}
@@ -109,13 +116,15 @@ export default function DragPanGrid({
                 height: item.height,
                 borderRadius: "16px",
                 overflow: "hidden",
-                border: "1px solid rgba(255,255,255,0.06)",
+                border: "1px solid color-mix(in oklab, var(--foreground) 6%, transparent)",
                 background: item.background,
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "flex-end",
                 padding: "20px",
-                transition: "border-color 0.3s, box-shadow 0.3s",
+                transition: reduced
+                  ? "none"
+                  : `border-color 0.3s ${EASE_STANDARD_CSS}, box-shadow 0.3s ${EASE_STANDARD_CSS}`,
                 cursor: "default",
               }}
             >

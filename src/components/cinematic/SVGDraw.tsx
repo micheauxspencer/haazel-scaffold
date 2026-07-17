@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useReducedMotion } from "@/lib/motion/useReducedMotion";
 
 interface SVGDrawProps {
   path: string;
@@ -23,8 +24,13 @@ export default function SVGDraw({
 }: SVGDrawProps) {
   const sectionRef = useRef<HTMLDivElement>(null);
   const pathRef = useRef<SVGPathElement>(null);
+  const reduced = useReducedMotion();
 
   useEffect(() => {
+    // Settled state: path renders fully drawn (no dasharray/dashoffset
+    // ever applied), so skip straight past the dash-length setup.
+    if (reduced) return;
+
     let ctx: { revert: () => void } | null = null;
 
     const init = async () => {
@@ -64,7 +70,7 @@ export default function SVGDraw({
     return () => {
       ctx?.revert();
     };
-  }, [path]);
+  }, [path, reduced]);
 
   return (
     <div

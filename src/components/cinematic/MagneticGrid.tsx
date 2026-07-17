@@ -1,13 +1,18 @@
 "use client";
 
 import { useRef, useCallback, useState } from "react";
+import { usePointerFine } from "@/lib/motion/usePointerFine";
+import { useReducedMotion } from "@/lib/motion/useReducedMotion";
+import { EASE_STANDARD_CSS } from "@/lib/motion/constants";
 
 interface MagneticGridProps {
   rows?: number;
   cols?: number;
   dotSize?: number;
   gap?: number;
+  /** Any CSS color. Defaults to a subtle foreground-token mix. */
   dotColor?: string;
+  /** Any CSS color. Defaults to a stronger foreground-token mix. */
   activeColor?: string;
   magnetRadius?: number;
   magnetStrength?: number;
@@ -19,13 +24,16 @@ export default function MagneticGrid({
   cols = 12,
   dotSize = 12,
   gap = 8,
-  dotColor = "rgba(255,255,255,0.06)",
-  activeColor = "rgba(255,255,255,0.2)",
+  dotColor = "color-mix(in oklab, var(--foreground) 6%, transparent)",
+  activeColor = "color-mix(in oklab, var(--foreground) 20%, transparent)",
   magnetRadius = 120,
   magnetStrength = 8,
   className = "",
 }: MagneticGridProps) {
   const gridRef = useRef<HTMLDivElement>(null);
+  const pointerFine = usePointerFine();
+  const reduced = useReducedMotion();
+  const active = pointerFine && !reduced;
   const [offsets, setOffsets] = useState<{ x: number; y: number; active: boolean }[]>(
     Array.from({ length: rows * cols }, () => ({ x: 0, y: 0, active: false })),
   );
@@ -86,8 +94,8 @@ export default function MagneticGrid({
     >
       <div
         ref={gridRef}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
+        onMouseMove={active ? handleMouseMove : undefined}
+        onMouseLeave={active ? handleMouseLeave : undefined}
         style={{
           display: "grid",
           gridTemplateColumns: `repeat(${cols}, ${dotSize}px)`,
@@ -106,7 +114,7 @@ export default function MagneticGrid({
               borderRadius: dotSize * 0.25,
               background: off.active ? activeColor : dotColor,
               transform: `translate3d(${off.x}px, ${off.y}px, 0)`,
-              transition: "background 0.2s, transform 0.15s ease-out",
+              transition: `background 0.2s ${EASE_STANDARD_CSS}, transform 0.15s ${EASE_STANDARD_CSS}`,
               willChange: "transform",
             }}
           />

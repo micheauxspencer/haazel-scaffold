@@ -1,6 +1,8 @@
 "use client";
 
 import { useRef, useCallback, useState, type ReactNode } from "react";
+import { useReducedMotion } from "@/lib/motion/useReducedMotion";
+import { EASE_STANDARD_CSS } from "@/lib/motion/constants";
 
 interface Particle {
   id: number;
@@ -13,6 +15,7 @@ interface Particle {
 
 interface ParticleButtonProps {
   children: ReactNode;
+  /** Any CSS color. Defaults to the site's primary token. */
   color?: string;
   particleCount?: number;
   as?: "button" | "a";
@@ -23,7 +26,7 @@ interface ParticleButtonProps {
 
 export default function ParticleButton({
   children,
-  color = "#4f46e5",
+  color = "var(--primary)",
   particleCount = 12,
   as: Tag = "button",
   href,
@@ -33,10 +36,14 @@ export default function ParticleButton({
   const btnRef = useRef<HTMLElement>(null);
   const [particles, setParticles] = useState<Particle[]>([]);
   const idCounter = useRef(0);
+  const reduced = useReducedMotion();
 
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
       onClick?.();
+
+      // Reduced motion: click still fires onClick above, just no burst.
+      if (reduced) return;
 
       const rect = btnRef.current?.getBoundingClientRect();
       if (!rect) return;
@@ -69,7 +76,7 @@ export default function ParticleButton({
         );
       }, 800);
     },
-    [color, particleCount, onClick],
+    [color, particleCount, onClick, reduced],
   );
 
   const tagProps =
@@ -89,7 +96,7 @@ export default function ParticleButton({
         justifyContent: "center",
         padding: "14px 36px",
         background: color,
-        color: "white",
+        color: "var(--primary-foreground)",
         border: "none",
         borderRadius: "14px",
         cursor: "pointer",
@@ -98,30 +105,34 @@ export default function ParticleButton({
         overflow: "visible",
         outline: "none",
         textDecoration: "none",
-        transition: "transform 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
+        transition: reduced ? "none" : `transform 0.2s ${EASE_STANDARD_CSS}`,
       }}
     >
       <span style={{ position: "relative", zIndex: 2 }}>{children}</span>
 
-      {/* Particles */}
+      {/* Particles — array stays empty under reduced motion, so nothing renders */}
       {particles.map((p) => (
         <span
           key={p.id}
-          style={{
-            position: "absolute",
-            left: p.x,
-            top: p.y,
-            width: "6px",
-            height: "6px",
-            borderRadius: "50%",
-            background: p.color,
-            pointerEvents: "none",
-            zIndex: 1,
-            opacity: 0,
-            transform: `translate3d(${p.dx}px, ${p.dy}px, 0) scale(0)`,
-            animation: "particleBurst 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards",
-            willChange: "transform, opacity",
-          }}
+          style={
+            {
+              position: "absolute",
+              left: p.x,
+              top: p.y,
+              width: "6px",
+              height: "6px",
+              borderRadius: "50%",
+              background: p.color,
+              pointerEvents: "none",
+              zIndex: 1,
+              opacity: 0,
+              "--dx": `${p.dx}px`,
+              "--dy": `${p.dy}px`,
+              transform: `translate3d(${p.dx}px, ${p.dy}px, 0) scale(0)`,
+              animation: "particleBurst 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards",
+              willChange: "transform, opacity",
+            } as React.CSSProperties
+          }
         />
       ))}
 

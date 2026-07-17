@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useReducedMotion } from "@/lib/motion/useReducedMotion";
+import { EASE_STANDARD_CSS } from "@/lib/motion/constants";
 
 interface CoverflowItem {
   title: string;
@@ -18,6 +20,7 @@ export default function CoverflowCarousel({
   className = "",
 }: CoverflowCarouselProps) {
   const [current, setCurrent] = useState(Math.floor(items.length / 2));
+  const reduced = useReducedMotion();
 
   const move = useCallback(
     (dir: number) => {
@@ -27,6 +30,11 @@ export default function CoverflowCarousel({
     },
     [items.length],
   );
+
+  const cardTransition = reduced ? "none" : `all 0.6s ${EASE_STANDARD_CSS}`;
+  const navTransition = reduced
+    ? "none"
+    : `background 0.2s ${EASE_STANDARD_CSS}, border-color 0.2s ${EASE_STANDARD_CSS}`;
 
   return (
     <div
@@ -71,14 +79,13 @@ export default function CoverflowCarousel({
                 flexDirection: "column",
                 justifyContent: "flex-end",
                 textAlign: "left",
-                color: "rgba(234,231,226,0.95)",
+                color: "var(--card-foreground)",
                 background: item.background,
                 transform: `translateX(${tx}px) rotateY(${ry}deg) scale(${scale})`,
                 zIndex,
                 opacity,
                 filter: `brightness(${brightness})`,
-                transition:
-                  "all 0.6s cubic-bezier(0.16, 1, 0.3, 1)",
+                transition: cardTransition,
                 willChange: "transform, opacity",
                 outline: "none",
               }}
@@ -115,12 +122,12 @@ export default function CoverflowCarousel({
             width: "40px",
             height: "40px",
             borderRadius: "50%",
-            border: "1px solid rgba(255,255,255,0.1)",
+            border: "1px solid var(--border)",
             background: "transparent",
-            color: "rgba(234,231,226,0.95)",
+            color: "var(--foreground)",
             fontSize: "18px",
             cursor: "pointer",
-            transition: "background 0.2s, border-color 0.2s",
+            transition: navTransition,
           }}
           aria-label="Previous"
         >
@@ -132,12 +139,12 @@ export default function CoverflowCarousel({
             width: "40px",
             height: "40px",
             borderRadius: "50%",
-            border: "1px solid rgba(255,255,255,0.1)",
+            border: "1px solid var(--border)",
             background: "transparent",
-            color: "rgba(234,231,226,0.95)",
+            color: "var(--foreground)",
             fontSize: "18px",
             cursor: "pointer",
-            transition: "background 0.2s, border-color 0.2s",
+            transition: navTransition,
           }}
           aria-label="Next"
         >

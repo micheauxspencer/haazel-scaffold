@@ -21,24 +21,17 @@ interface NavLink {
 
 interface NavbarProps {
   brandName: string;
-  links?: NavLink[];
+  /** Nav links come from layout.tsx (HAAZEL:NAV region) — no hardcoded fallback. */
+  links: NavLink[];
   ctaLabel?: string;
   ctaHref?: string;
 }
 
-const defaultLinks: NavLink[] = [
-  { label: "Home", href: "/" },
-  { label: "About", href: "/about" },
-  { label: "Services", href: "/services" },
-  { label: "Blog", href: "/blog" },
-  { label: "Contact", href: "/contact" },
-];
-
 export function Navbar({
   brandName,
-  links = defaultLinks,
+  links,
   ctaLabel = "Get Started",
-  ctaHref = "/contact",
+  ctaHref = "#contact",
 }: NavbarProps) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);

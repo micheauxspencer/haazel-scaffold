@@ -1,8 +1,14 @@
 "use client";
 
 import { useRef, useCallback, useState, useEffect } from "react";
+import { usePointerFine } from "@/lib/motion/usePointerFine";
+import { useReducedMotion } from "@/lib/motion/useReducedMotion";
 
-/* ─── Horizontal Wipe ─── */
+/* ─── Horizontal Wipe ───
+ * Drag-driven (Pointer Events unify mouse/touch/pen — already works on
+ * touch via drag, matching the DragPanGrid pattern) with no ambient
+ * animation to gate, so no pointer/reduced-motion branching is needed here.
+ */
 interface WipeRevealProps {
   beforeImage: string;
   afterImage: string;
@@ -60,7 +66,7 @@ export function WipeReveal({
         borderRadius: "16px",
         overflow: "hidden",
         cursor: "ew-resize",
-        border: "1px solid rgba(255,255,255,0.06)",
+        border: "1px solid color-mix(in oklab, var(--foreground) 6%, transparent)",
         touchAction: "none",
       }}
     >
@@ -94,7 +100,7 @@ export function WipeReveal({
           bottom: 0,
           left: `${pct * 100}%`,
           width: "2px",
-          background: "white",
+          background: "var(--background)",
           zIndex: 3,
           transform: "translateX(-50%)",
           pointerEvents: "none",
@@ -110,16 +116,16 @@ export function WipeReveal({
           width: "44px",
           height: "44px",
           borderRadius: "50%",
-          background: "white",
+          background: "var(--background)",
           zIndex: 4,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
+          boxShadow: "0 4px 20px color-mix(in oklab, var(--foreground) 30%, transparent)",
           pointerEvents: "none",
         }}
       >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1a1a1f" strokeWidth="2">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--foreground)" strokeWidth="2">
           <path d="M8 3l-5 9 5 9M16 3l5 9-5 9" />
         </svg>
       </div>
@@ -145,11 +151,11 @@ export function WipeReveal({
               fontWeight: 500,
               letterSpacing: "0.1em",
               textTransform: "uppercase",
-              background: "rgba(0,0,0,0.6)",
+              background: "color-mix(in oklab, var(--background) 60%, transparent)",
               backdropFilter: "blur(8px)",
               padding: "6px 14px",
               borderRadius: "100px",
-              color: "rgba(234,231,226,0.95)",
+              color: "var(--foreground)",
             }}
           >
             {label}
@@ -160,7 +166,14 @@ export function WipeReveal({
   );
 }
 
-/* ─── Circular Spotlight ─── */
+/* ─── Circular Spotlight ───
+ * Purely hover-driven (mousemove + wheel) with no tap equivalent worth
+ * inventing, so per convention it gates on pointer-fine: on touch, or with
+ * reduced motion, it renders its settled state — revealBackground fully
+ * visible, no clip, no hint (a "move your mouse" hint is meaningless
+ * without a mouse), same pattern as TextMaskReveal's masked-content-becomes-
+ * fully-visible fallback.
+ */
 interface SpotlightRevealProps {
   baseBackground: string;
   revealBackground: string;
@@ -181,6 +194,20 @@ export function SpotlightReveal({
   const [showHint, setShowHint] = useState(true);
   const [clip, setClip] = useState("circle(0px at 50% 50%)");
   const [cursor, setCursor] = useState({ x: 0, y: 0, visible: false });
+  const pointerFine = usePointerFine();
+  const reduced = useReducedMotion();
+  const active = pointerFine && !reduced;
+
+  // Reset to the settled (fully revealed) state whenever the effect becomes
+  // unavailable, so revealBackground is never stuck hidden behind an
+  // unreachable hover gesture.
+  useEffect(() => {
+    if (!active) {
+      setClip("circle(0px at 50% 50%)");
+      setCursor((c) => ({ ...c, visible: false }));
+      setShowHint(false);
+    }
+  }, [active]);
 
   const onMouseEnter = useCallback(() => {
     setShowHint(false);
@@ -211,18 +238,18 @@ export function SpotlightReveal({
     <div
       ref={containerRef}
       className={className}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-      onMouseMove={onMouseMove}
-      onWheel={onWheel}
+      onMouseEnter={active ? onMouseEnter : undefined}
+      onMouseLeave={active ? onMouseLeave : undefined}
+      onMouseMove={active ? onMouseMove : undefined}
+      onWheel={active ? onWheel : undefined}
       style={{
         position: "relative",
         width: "100%",
         aspectRatio: "16/9",
         borderRadius: "16px",
         overflow: "hidden",
-        cursor: "none",
-        border: "1px solid rgba(255,255,255,0.06)",
+        cursor: active ? "none" : "default",
+        border: "1px solid color-mix(in oklab, var(--foreground) 6%, transparent)",
       }}
     >
       <div style={{ position: "absolute", inset: 0, background: baseBackground, zIndex: 1 }} />
@@ -232,18 +259,21 @@ export function SpotlightReveal({
           inset: 0,
           background: revealBackground,
           zIndex: 2,
-          clipPath: clip,
-          willChange: "clip-path",
+          // Settled state (no fine pointer, or reduced motion): fully
+          // revealed rather than permanently hidden behind an unreachable
+          // hover gesture.
+          clipPath: active ? clip : "none",
+          willChange: active ? "clip-path" : undefined,
         }}
       />
-      {cursor.visible && (
+      {active && cursor.visible && (
         <div
           style={{
             position: "absolute",
             zIndex: 3,
             width: radiusRef.current * 2,
             height: radiusRef.current * 2,
-            border: "2px solid rgba(255,255,255,0.5)",
+            border: "2px solid color-mix(in oklab, var(--background) 50%, transparent)",
             borderRadius: "50%",
             pointerEvents: "none",
             transform: "translate(-50%, -50%)",
@@ -252,7 +282,7 @@ export function SpotlightReveal({
           }}
         />
       )}
-      {showHint && (
+      {active && showHint && (
         <div
           style={{
             position: "absolute",
@@ -261,7 +291,7 @@ export function SpotlightReveal({
             transform: "translate(-50%, -50%)",
             zIndex: 4,
             fontSize: "14px",
-            color: "rgba(255,255,255,0.8)",
+            color: "color-mix(in oklab, var(--background) 80%, transparent)",
             pointerEvents: "none",
           }}
         >

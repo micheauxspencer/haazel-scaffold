@@ -1,6 +1,9 @@
 "use client";
 
 import { useRef, useCallback, type ReactNode } from "react";
+import { usePointerFine } from "@/lib/motion/usePointerFine";
+import { useReducedMotion } from "@/lib/motion/useReducedMotion";
+import { EASE_STANDARD_CSS } from "@/lib/motion/constants";
 
 interface SpotlightItem {
   icon?: ReactNode;
@@ -11,6 +14,10 @@ interface SpotlightItem {
 interface SpotlightBorderCardsProps {
   items: SpotlightItem[];
   columns?: number;
+  /**
+   * Any CSS color (not an rgb triplet). Defaults to the site's primary
+   * token. Alpha layers are derived via `color-mix`.
+   */
   accentColor?: string;
   className?: string;
 }
@@ -18,10 +25,13 @@ interface SpotlightBorderCardsProps {
 export default function SpotlightBorderCards({
   items,
   columns = 3,
-  accentColor = "139, 92, 246",
+  accentColor = "var(--primary)",
   className = "",
 }: SpotlightBorderCardsProps) {
   const gridRef = useRef<HTMLDivElement>(null);
+  const pointerFine = usePointerFine();
+  const reduced = useReducedMotion();
+  const active = pointerFine && !reduced;
 
   const handleMouseMove = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
@@ -43,7 +53,7 @@ export default function SpotlightBorderCards({
   return (
     <div
       ref={gridRef}
-      onMouseMove={handleMouseMove}
+      onMouseMove={active ? handleMouseMove : undefined}
       className={className}
       style={{
         display: "grid",
@@ -59,20 +69,20 @@ export default function SpotlightBorderCards({
             position: "relative",
             padding: "2rem",
             borderRadius: "1rem",
-            background: "rgba(255,255,255,0.03)",
-            border: "1px solid rgba(255,255,255,0.06)",
+            background: "color-mix(in oklab, var(--foreground) 3%, transparent)",
+            border: "1px solid color-mix(in oklab, var(--foreground) 6%, transparent)",
             overflow: "hidden",
-            transition: "border-color 0.3s cubic-bezier(.16, 1, .3, 1)",
+            transition: `border-color 0.3s ${EASE_STANDARD_CSS}`,
           }}
         >
-          {/* Spotlight pseudo-layer */}
+          {/* Spotlight pseudo-layer (static, off-canvas fallback when inactive) */}
           <div
             aria-hidden
             style={{
               position: "absolute",
               inset: 0,
               borderRadius: "inherit",
-              background: `radial-gradient(circle 180px at var(--mx, -200px) var(--my, -200px), rgba(${accentColor}, 0.15), transparent)`,
+              background: `radial-gradient(circle 180px at var(--mx, -200px) var(--my, -200px), color-mix(in oklab, ${accentColor} 15%, transparent), transparent)`,
               pointerEvents: "none",
               zIndex: 0,
             }}
@@ -84,10 +94,10 @@ export default function SpotlightBorderCards({
               position: "absolute",
               inset: -1,
               borderRadius: "inherit",
-              background: `radial-gradient(circle 180px at var(--mx, -200px) var(--my, -200px), rgba(${accentColor}, 0.4), transparent)`,
+              background: `radial-gradient(circle 180px at var(--mx, -200px) var(--my, -200px), color-mix(in oklab, ${accentColor} 40%, transparent), transparent)`,
               pointerEvents: "none",
               zIndex: -1,
-              mask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+              mask: "linear-gradient(var(--foreground) 0 0) content-box, linear-gradient(var(--foreground) 0 0)",
               maskComposite: "exclude",
               WebkitMaskComposite: "xor",
               padding: "1px",
@@ -98,7 +108,7 @@ export default function SpotlightBorderCards({
               <div
                 style={{
                   marginBottom: "1rem",
-                  color: `rgba(${accentColor}, 1)`,
+                  color: accentColor,
                 }}
               >
                 {item.icon}
@@ -109,7 +119,7 @@ export default function SpotlightBorderCards({
                 fontSize: "1.125rem",
                 fontWeight: 600,
                 marginBottom: "0.5rem",
-                color: "rgba(255,255,255,0.95)",
+                color: "var(--foreground)",
               }}
             >
               {item.title}
@@ -118,7 +128,7 @@ export default function SpotlightBorderCards({
               style={{
                 fontSize: "0.875rem",
                 lineHeight: 1.6,
-                color: "rgba(255,255,255,0.5)",
+                color: "var(--muted-foreground)",
               }}
             >
               {item.description}

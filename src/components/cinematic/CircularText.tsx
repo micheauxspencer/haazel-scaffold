@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useReducedMotion } from "@/lib/motion/useReducedMotion";
 
 interface CircularTextProps {
   text: string;
@@ -27,8 +28,10 @@ export default function CircularText({
 }: CircularTextProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const angleRef = useRef(0);
+  const reduced = useReducedMotion();
 
   useEffect(() => {
+    if (reduced) return; // static, unrotated text rendered below
     if (!scrollReactive) return;
 
     let ctx: { revert: () => void } | null = null;
@@ -54,7 +57,7 @@ export default function CircularText({
     return () => {
       ctx?.revert();
     };
-  }, [scrollReactive]);
+  }, [reduced, scrollReactive]);
 
   const r = size / 2;
   const pathR = r * 0.75;
@@ -75,10 +78,11 @@ export default function CircularText({
         style={{
           width: "100%",
           height: "100%",
-          animation: scrollReactive
-            ? undefined
-            : `circularSpin ${speed}s linear infinite${reverse ? " reverse" : ""}`,
-          willChange: "transform",
+          animation:
+            reduced || scrollReactive
+              ? undefined
+              : `circularSpin ${speed}s linear infinite${reverse ? " reverse" : ""}`,
+          willChange: reduced ? undefined : "transform",
         }}
       >
         <defs>

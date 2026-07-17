@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState, type ElementType } from "react";
+import { useReducedMotion } from "@/lib/motion/useReducedMotion";
+import { EASE_STANDARD_CSS } from "@/lib/motion/constants";
 
 interface TypewriterProps {
   phrases: string[];
@@ -24,6 +26,7 @@ export default function Typewriter({
   className = "",
 }: TypewriterProps) {
   const Tag = as as ElementType;
+  const reduced = useReducedMotion();
   const [display, setDisplay] = useState("");
   const [cursorVisible, setCursorVisible] = useState(true);
   const phraseIdx = useRef(0);
@@ -31,16 +34,23 @@ export default function Typewriter({
   const isDeleting = useRef(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
 
-  // Cursor blink
+  // Cursor blink — no blink loop under reduced motion (cursor renders solid).
   useEffect(() => {
+    if (reduced) return;
+
     const interval = setInterval(() => {
       setCursorVisible((v) => !v);
     }, 530);
     return () => clearInterval(interval);
-  }, []);
+  }, [reduced]);
 
   // Typing loop
   useEffect(() => {
+    if (reduced) {
+      setDisplay(phrases[0] ?? ""); // complete final text immediately, no loop
+      return;
+    }
+
     function tick() {
       const currentPhrase = phrases[phraseIdx.current];
 
@@ -76,7 +86,7 @@ export default function Typewriter({
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
-  }, [phrases, typingSpeed, deletingSpeed, pauseTime, loop]);
+  }, [reduced, phrases, typingSpeed, deletingSpeed, pauseTime, loop]);
 
   return (
     <Tag className={className} style={{ whiteSpace: "pre-wrap" }}>
@@ -89,8 +99,8 @@ export default function Typewriter({
           background: cursorColor,
           marginLeft: "2px",
           verticalAlign: "text-bottom",
-          opacity: cursorVisible ? 1 : 0,
-          transition: "opacity 0.1s",
+          opacity: reduced ? 1 : cursorVisible ? 1 : 0,
+          transition: `opacity 0.1s ${EASE_STANDARD_CSS}`,
         }}
         aria-hidden
       />

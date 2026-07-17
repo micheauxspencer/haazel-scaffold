@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, type ReactNode } from "react";
+import { useReducedMotion } from "@/lib/motion/useReducedMotion";
 
 interface ColorShiftPanel {
   bg: string;
@@ -19,8 +20,11 @@ export default function ColorShiftSection({
 }: ColorShiftSectionProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const panelRefs = useRef<(HTMLElement | null)[]>([]);
+  const reduced = useReducedMotion();
 
   useEffect(() => {
+    if (reduced) return; // each panel renders its own bg/text below — no body tween
+
     let ctx: { revert: () => void } | null = null;
 
     const init = async () => {
@@ -67,7 +71,7 @@ export default function ColorShiftSection({
       document.body.style.backgroundColor = "";
       document.body.style.color = "";
     };
-  }, [panels]);
+  }, [panels, reduced]);
 
   return (
     <div ref={containerRef} className={className}>
@@ -87,6 +91,10 @@ export default function ColorShiftSection({
             justifyContent: "center",
             textAlign: "center",
             padding: "60px 24px",
+            // Reduced motion: apply each panel's colors directly instead of
+            // tweening document.body on scroll.
+            backgroundColor: reduced ? panel.bg : undefined,
+            color: reduced ? panel.text : undefined,
           }}
         >
           {panel.children}

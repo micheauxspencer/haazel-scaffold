@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useReducedMotion } from "@/lib/motion/useReducedMotion";
 
 interface KineticMarqueeProps {
   items: string[];
@@ -21,8 +22,11 @@ export default function KineticMarquee({
   const rafId = useRef<number>(0);
   const offset = useRef(0);
   const currentSpeed = useRef(baseSpeed);
+  const reduced = useReducedMotion();
 
   useEffect(() => {
+    if (reduced) return; // static single row rendered below
+
     let ctx: { revert: () => void } | null = null;
 
     const init = async () => {
@@ -82,19 +86,34 @@ export default function KineticMarquee({
       cancelAnimationFrame(rafId.current);
       ctx?.revert();
     };
-  }, [baseSpeed, direction]);
+  }, [reduced, baseSpeed, direction]);
 
-  const content = items.join(separator) + separator;
+  // Loop copies need a trailing separator for seamless wrap; the static
+  // (reduced-motion) row reads better without the dangling separator.
+  const loopContent = items.join(separator) + separator;
+  const staticContent = items.join(separator);
+
+  const itemStyle: React.CSSProperties = {
+    fontSize: "clamp(1rem, 2vw, 1.5rem)",
+    fontWeight: 500,
+    letterSpacing: "0.02em",
+    color: "color-mix(in oklab, var(--primary-foreground) 70%, transparent)",
+    textTransform: "uppercase",
+    flexShrink: 0,
+    paddingRight: 0,
+  };
 
   return (
     <div
       className={className}
       style={{
         overflow: "hidden",
-        background: "rgba(0,0,0,0.85)",
+        background: "color-mix(in oklab, var(--primary) 85%, transparent)",
         padding: "1.25rem 0",
-        borderTop: "1px solid rgba(255,255,255,0.06)",
-        borderBottom: "1px solid rgba(255,255,255,0.06)",
+        borderTop:
+          "1px solid color-mix(in oklab, var(--primary-foreground) 6%, transparent)",
+        borderBottom:
+          "1px solid color-mix(in oklab, var(--primary-foreground) 6%, transparent)",
       }}
     >
       <div
@@ -102,26 +121,19 @@ export default function KineticMarquee({
         style={{
           display: "flex",
           whiteSpace: "nowrap",
-          willChange: "transform",
+          willChange: reduced ? undefined : "transform",
         }}
       >
-        {/* Three copies for seamless loop */}
-        {[0, 1, 2].map((copy) => (
-          <span
-            key={copy}
-            style={{
-              fontSize: "clamp(1rem, 2vw, 1.5rem)",
-              fontWeight: 500,
-              letterSpacing: "0.02em",
-              color: "rgba(255,255,255,0.7)",
-              textTransform: "uppercase",
-              flexShrink: 0,
-              paddingRight: 0,
-            }}
-          >
-            {content}
-          </span>
-        ))}
+        {reduced ? (
+          <span style={itemStyle}>{staticContent}</span>
+        ) : (
+          // Three copies for seamless loop
+          [0, 1, 2].map((copy) => (
+            <span key={copy} style={itemStyle}>
+              {loopContent}
+            </span>
+          ))
+        )}
       </div>
     </div>
   );

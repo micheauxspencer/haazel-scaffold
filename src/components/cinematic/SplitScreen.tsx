@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, type ReactNode } from "react";
+import { useReducedMotion } from "@/lib/motion/useReducedMotion";
 
 interface SplitScreenProps {
   leftItems: ReactNode[];
@@ -18,8 +19,11 @@ export default function SplitScreen({
   const sectionRef = useRef<HTMLDivElement>(null);
   const leftRef = useRef<HTMLDivElement>(null);
   const rightRef = useRef<HTMLDivElement>(null);
+  const reduced = useReducedMotion();
 
   useEffect(() => {
+    if (reduced) return; // columns render at rest, no scrub
+
     let ctx: { revert: () => void } | null = null;
 
     const init = async () => {
@@ -60,7 +64,7 @@ export default function SplitScreen({
     return () => {
       ctx?.revert();
     };
-  }, [travelDistance]);
+  }, [travelDistance, reduced]);
 
   return (
     <section
@@ -89,7 +93,7 @@ export default function SplitScreen({
             display: "flex",
             flexDirection: "column",
             gap: "16px",
-            willChange: "transform",
+            willChange: reduced ? undefined : "transform",
           }}
         >
           {leftItems.map((item, i) => (
@@ -113,7 +117,7 @@ export default function SplitScreen({
             display: "flex",
             flexDirection: "column",
             gap: "16px",
-            willChange: "transform",
+            willChange: reduced ? undefined : "transform",
           }}
         >
           {rightItems.map((item, i) => (

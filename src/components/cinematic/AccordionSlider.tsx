@@ -1,6 +1,9 @@
 "use client";
 
-import { useState, useCallback, type CSSProperties } from "react";
+import { useState, useCallback } from "react";
+import { usePointerFine } from "@/lib/motion/usePointerFine";
+import { useReducedMotion } from "@/lib/motion/useReducedMotion";
+import { EASE_STANDARD_CSS } from "@/lib/motion/constants";
 
 interface AccordionPanel {
   image: string;
@@ -21,6 +24,16 @@ export default function AccordionSlider({
   className = "",
 }: AccordionSliderProps) {
   const [activeIndex, setActiveIndex] = useState(0);
+  const pointerFine = usePointerFine();
+  const reduced = useReducedMotion();
+  // Tap-to-expand (onClick) always works, including on touch. Hover-preview
+  // (onMouseEnter) is a fine-pointer convenience layered on top of it, and
+  // is also an animated cursor-reactive effect, so it's off under reduced
+  // motion too.
+  const hoverEnabled = pointerFine && !reduced;
+  // Explicit click-driven state changes stay interactive under reduced
+  // motion; only the animated transition between states is removed.
+  const tr = useCallback((css: string) => (reduced ? "none" : css), [reduced]);
 
   const handleActivate = useCallback((index: number) => {
     setActiveIndex(index);
@@ -44,7 +57,7 @@ export default function AccordionSlider({
             <button
               key={i}
               onClick={() => handleActivate(i)}
-              onMouseEnter={() => handleActivate(i)}
+              onMouseEnter={hoverEnabled ? () => handleActivate(i) : undefined}
               style={{
                 height: isActive ? "240px" : "60px",
                 borderRadius: "14px",
@@ -54,8 +67,8 @@ export default function AccordionSlider({
                 border: "none",
                 padding: 0,
                 outline: "none",
-                transition: "height 0.5s cubic-bezier(0.16, 1, 0.3, 1)",
-                background: "#0a0a0a",
+                transition: tr(`height 0.5s ${EASE_STANDARD_CSS}`),
+                background: "var(--background)",
                 width: "100%",
                 textAlign: "left",
               }}
@@ -69,7 +82,7 @@ export default function AccordionSlider({
                   backgroundSize: "cover",
                   backgroundPosition: "center",
                   transform: isActive ? "scale(1.03)" : "scale(1)",
-                  transition: "transform 0.5s ease",
+                  transition: tr(`transform 0.5s ${EASE_STANDARD_CSS}`),
                   willChange: "transform",
                 }}
               />
@@ -79,7 +92,7 @@ export default function AccordionSlider({
                   position: "absolute",
                   inset: 0,
                   background:
-                    "linear-gradient(to right, rgba(10,10,11,0.8) 0%, rgba(10,10,11,0.3) 50%, transparent 80%)",
+                    "linear-gradient(to right, color-mix(in oklab, var(--background) 80%, transparent) 0%, color-mix(in oklab, var(--background) 30%, transparent) 50%, transparent 80%)",
                 }}
               />
               {/* Collapsed title */}
@@ -92,10 +105,10 @@ export default function AccordionSlider({
                   fontSize: "14px",
                   fontWeight: 500,
                   letterSpacing: "0.02em",
-                  color: "rgba(234,231,226,0.95)",
+                  color: "var(--foreground)",
                   zIndex: 2,
                   opacity: isActive ? 0 : 1,
-                  transition: "opacity 0.3s",
+                  transition: tr(`opacity 0.3s ${EASE_STANDARD_CSS}`),
                 }}
               >
                 {String(i + 1).padStart(2, "0")} — {panel.title}
@@ -109,8 +122,7 @@ export default function AccordionSlider({
                   zIndex: 2,
                   opacity: isActive ? 1 : 0,
                   transform: isActive ? "translateY(0)" : "translateY(10px)",
-                  transition:
-                    "all 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.1s",
+                  transition: tr(`all 0.4s ${EASE_STANDARD_CSS} 0.1s`),
                 }}
               >
                 <h3
@@ -118,7 +130,7 @@ export default function AccordionSlider({
                     fontSize: "22px",
                     fontWeight: 600,
                     marginBottom: "6px",
-                    color: "rgba(234,231,226,0.95)",
+                    color: "var(--foreground)",
                   }}
                 >
                   {panel.heading}
@@ -126,7 +138,7 @@ export default function AccordionSlider({
                 <p
                   style={{
                     fontSize: "13px",
-                    color: "rgba(234,231,226,0.7)",
+                    color: "var(--muted-foreground)",
                     lineHeight: 1.5,
                     maxWidth: "40ch",
                   }}
@@ -160,7 +172,7 @@ export default function AccordionSlider({
           <button
             key={i}
             onClick={() => handleActivate(i)}
-            onMouseEnter={() => handleActivate(i)}
+            onMouseEnter={hoverEnabled ? () => handleActivate(i) : undefined}
             style={{
               flex: isActive ? 5 : 1,
               borderRadius: "16px",
@@ -170,8 +182,8 @@ export default function AccordionSlider({
               border: "none",
               padding: 0,
               outline: "none",
-              transition: "flex 0.6s cubic-bezier(0.16, 1, 0.3, 1)",
-              background: "#0a0a0a",
+              transition: tr(`flex 0.6s ${EASE_STANDARD_CSS}`),
+              background: "var(--background)",
               textAlign: "left",
             }}
           >
@@ -184,8 +196,7 @@ export default function AccordionSlider({
                 backgroundSize: "cover",
                 backgroundPosition: "center",
                 transform: isActive ? "scale(1.05)" : "scale(1)",
-                transition:
-                  "transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)",
+                transition: tr(`transform 0.6s ${EASE_STANDARD_CSS}`),
                 willChange: "transform",
               }}
             />
@@ -196,7 +207,7 @@ export default function AccordionSlider({
                 position: "absolute",
                 inset: 0,
                 background:
-                  "linear-gradient(to top, rgba(10,10,11,0.85) 0%, rgba(10,10,11,0.2) 40%, transparent 60%)",
+                  "linear-gradient(to top, color-mix(in oklab, var(--background) 85%, transparent) 0%, color-mix(in oklab, var(--background) 20%, transparent) 40%, transparent 60%)",
               }}
             />
 
@@ -212,9 +223,9 @@ export default function AccordionSlider({
                 position: "absolute",
                 bottom: "28px",
                 left: "16px",
-                color: "rgba(234,231,226,0.95)",
+                color: "var(--foreground)",
                 opacity: isActive ? 0 : 1,
-                transition: "opacity 0.3s",
+                transition: tr(`opacity 0.3s ${EASE_STANDARD_CSS}`),
                 zIndex: 2,
               }}
             >
@@ -242,8 +253,7 @@ export default function AccordionSlider({
                   transform: isActive
                     ? "translateY(0)"
                     : "translateY(8px)",
-                  transition:
-                    "all 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.1s",
+                  transition: tr(`all 0.4s ${EASE_STANDARD_CSS} 0.1s`),
                   color: "currentColor",
                   marginBottom: "8px",
                   fontWeight: 400,
@@ -257,13 +267,12 @@ export default function AccordionSlider({
                   fontWeight: 600,
                   letterSpacing: "-0.015em",
                   marginBottom: "6px",
-                  color: "rgba(234,231,226,0.95)",
+                  color: "var(--foreground)",
                   opacity: isActive ? 1 : 0,
                   transform: isActive
                     ? "translateY(0)"
                     : "translateY(10px)",
-                  transition:
-                    "all 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.15s",
+                  transition: tr(`all 0.4s ${EASE_STANDARD_CSS} 0.15s`),
                 }}
               >
                 {panel.heading}
@@ -271,15 +280,14 @@ export default function AccordionSlider({
               <p
                 style={{
                   fontSize: "14px",
-                  color: "rgba(234,231,226,0.7)",
+                  color: "var(--muted-foreground)",
                   lineHeight: 1.5,
                   maxWidth: "30ch",
                   opacity: isActive ? 1 : 0,
                   transform: isActive
                     ? "translateY(0)"
                     : "translateY(10px)",
-                  transition:
-                    "all 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.2s",
+                  transition: tr(`all 0.4s ${EASE_STANDARD_CSS} 0.2s`),
                 }}
               >
                 {panel.description}

@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useReducedMotion } from "@/lib/motion/useReducedMotion";
+import { EASE_STANDARD_CSS } from "@/lib/motion/constants";
 
 interface CanvasHeroProps {
   frameCount?: number;
@@ -22,16 +24,22 @@ export default function CanvasHero({
   const contentRef = useRef<HTMLDivElement>(null);
   const [progress, setProgress] = useState(0);
   const [loaded, setLoaded] = useState(false);
+  const reduced = useReducedMotion();
 
   const useFrameSequence = frameCount > 0;
+  // Reduced motion always falls back to the staticImage (or plain gradient)
+  // panel instead of scrubbing the canvas frame sequence.
+  const showCanvas = useFrameSequence && !reduced;
 
   useEffect(() => {
-    if (!useFrameSequence && staticImage) {
+    if (!showCanvas && staticImage) {
       setLoaded(true);
     }
-  }, [useFrameSequence, staticImage]);
+  }, [showCanvas, staticImage]);
 
   useEffect(() => {
+    if (reduced) return; // settled state rendered below (staticImage, no pin)
+
     let ctx: { revert: () => void } | null = null;
 
     const init = async () => {
@@ -138,14 +146,14 @@ export default function CanvasHero({
 
     init();
     return () => { ctx?.revert(); };
-  }, [frameCount, framePath, useFrameSequence]);
+  }, [frameCount, framePath, useFrameSequence, reduced]);
 
   return (
     <section
       ref={sectionRef}
       className={className}
       style={{
-        height: useFrameSequence ? "300vh" : "100vh",
+        height: showCanvas ? "300vh" : "100vh",
         position: "relative",
       }}
     >
@@ -158,7 +166,7 @@ export default function CanvasHero({
         }}
       >
         {/* Canvas / Image layer */}
-        {useFrameSequence ? (
+        {showCanvas ? (
           <canvas
             ref={canvasRef}
             style={{
@@ -187,14 +195,14 @@ export default function CanvasHero({
               position: "absolute",
               inset: 0,
               background:
-                "radial-gradient(ellipse at center, rgba(139,92,246,0.15) 0%, transparent 70%)",
+                "radial-gradient(ellipse at center, color-mix(in oklab, var(--primary) 15%, transparent) 0%, transparent 70%)",
               zIndex: 0,
             }}
           />
         )}
 
         {/* Loading indicator */}
-        {useFrameSequence && !loaded && (
+        {showCanvas && !loaded && (
           <div
             style={{
               position: "absolute",
@@ -203,7 +211,7 @@ export default function CanvasHero({
               alignItems: "center",
               justifyContent: "center",
               zIndex: 3,
-              background: "#0a0a0a",
+              background: "var(--background)",
             }}
           >
             <div style={{ textAlign: "center" }}>
@@ -211,7 +219,7 @@ export default function CanvasHero({
                 style={{
                   width: "120px",
                   height: "2px",
-                  background: "rgba(255,255,255,0.1)",
+                  background: "color-mix(in oklab, var(--foreground) 10%, transparent)",
                   borderRadius: "1px",
                   overflow: "hidden",
                 }}
@@ -220,8 +228,8 @@ export default function CanvasHero({
                   style={{
                     height: "100%",
                     width: `${progress * 100}%`,
-                    background: "rgba(139, 92, 246, 0.8)",
-                    transition: "width 0.2s ease",
+                    background: "color-mix(in oklab, var(--primary) 80%, transparent)",
+                    transition: `width 0.2s ${EASE_STANDARD_CSS}`,
                   }}
                 />
               </div>
@@ -231,7 +239,7 @@ export default function CanvasHero({
                   fontSize: "0.75rem",
                   letterSpacing: "0.1em",
                   textTransform: "uppercase",
-                  color: "rgba(255,255,255,0.4)",
+                  color: "var(--muted-foreground)",
                 }}
               >
                 Loading

@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useCallback, type ReactNode } from "react";
+import { useReducedMotion } from "@/lib/motion/useReducedMotion";
+import { EASE_STANDARD_CSS } from "@/lib/motion/constants";
 
 interface MorphState {
   id: string;
@@ -23,10 +25,17 @@ export default function ViewTransitionMorph({
 }: ViewTransitionMorphProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const active = states[activeIndex];
+  const reduced = useReducedMotion();
 
   const next = useCallback(() => {
     setActiveIndex((i) => (i + 1) % states.length);
   }, [states.length]);
+
+  // Reduced motion: the DOM change (new width/height/radius/background) is
+  // applied directly with no transition, instead of morphing between states.
+  const boxTransition = reduced ? "none" : `all 0.5s ${EASE_STANDARD_CSS}`;
+  const contentTransition = reduced ? "none" : `opacity 0.3s ${EASE_STANDARD_CSS}`;
+  const dotTransition = reduced ? "none" : `background 0.3s ${EASE_STANDARD_CSS}`;
 
   return (
     <div
@@ -48,15 +57,14 @@ export default function ViewTransitionMorph({
           width: active.width || "200px",
           height: active.height || "200px",
           borderRadius: active.borderRadius || "20px",
-          background: active.background || "#4f46e5",
+          background: active.background || "var(--primary)",
           border: "none",
           cursor: "pointer",
-          transition:
-            "all 0.5s cubic-bezier(0.16, 1, 0.3, 1)",
+          transition: boxTransition,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          color: "rgba(234,231,226,0.95)",
+          color: "var(--primary-foreground)",
           overflow: "hidden",
           willChange: "width, height, border-radius",
           outline: "none",
@@ -64,7 +72,7 @@ export default function ViewTransitionMorph({
       >
         <div
           style={{
-            transition: "opacity 0.3s ease",
+            transition: contentTransition,
             textAlign: "center",
           }}
         >
@@ -85,12 +93,12 @@ export default function ViewTransitionMorph({
               borderRadius: "50%",
               background:
                 i === activeIndex
-                  ? "rgba(234,231,226,0.8)"
-                  : "rgba(234,231,226,0.15)",
+                  ? "color-mix(in oklab, var(--foreground) 80%, transparent)"
+                  : "color-mix(in oklab, var(--foreground) 15%, transparent)",
               border: "none",
               cursor: "pointer",
               padding: 0,
-              transition: "background 0.3s",
+              transition: dotTransition,
               outline: "none",
             }}
           />
@@ -101,7 +109,7 @@ export default function ViewTransitionMorph({
       <p
         style={{
           fontSize: "13px",
-          color: "rgba(255,255,255,0.35)",
+          color: "color-mix(in oklab, var(--foreground) 35%, transparent)",
           letterSpacing: "0.08em",
           textTransform: "uppercase",
         }}

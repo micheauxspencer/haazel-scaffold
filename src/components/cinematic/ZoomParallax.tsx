@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, type ReactNode } from "react";
+import { useReducedMotion } from "@/lib/motion/useReducedMotion";
 
 interface ZoomParallaxProps {
   text: string;
@@ -14,16 +15,22 @@ interface ZoomParallaxProps {
 export default function ZoomParallax({
   text,
   backgroundImage,
-  backgroundColor = "#0a0a0b",
-  textColor = "rgba(234,231,226,0.3)",
+  backgroundColor = "var(--background)",
+  textColor = "color-mix(in oklab, var(--foreground) 30%, transparent)",
   className = "",
   children,
 }: ZoomParallaxProps) {
   const sectionRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
   const bgRef = useRef<HTMLDivElement>(null);
+  const reduced = useReducedMotion();
 
   useEffect(() => {
+    // Settled state is the rest frame (scale 1, fully opaque, no pin) —
+    // the zoom-to-invisible IS the animation, so reduced motion keeps the
+    // pre-zoom frame rather than the faded-out end state.
+    if (reduced) return;
+
     let ctx: { revert: () => void } | null = null;
 
     const init = async () => {
@@ -77,7 +84,7 @@ export default function ZoomParallax({
     return () => {
       ctx?.revert();
     };
-  }, []);
+  }, [reduced]);
 
   return (
     <section
@@ -100,7 +107,7 @@ export default function ZoomParallax({
             backgroundImage: `url(${backgroundImage})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
-            willChange: "transform",
+            willChange: reduced ? undefined : "transform",
           }}
         />
       )}
@@ -114,7 +121,7 @@ export default function ZoomParallax({
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          willChange: "transform, opacity",
+          willChange: reduced ? undefined : "transform, opacity",
         }}
       >
         <span

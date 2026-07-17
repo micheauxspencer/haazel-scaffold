@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, type ReactNode } from "react";
+import { useReducedMotion } from "@/lib/motion/useReducedMotion";
+import { EASE_STANDARD_CSS } from "@/lib/motion/constants";
 
 interface StickyStackItem {
   visual: ReactNode;
@@ -19,8 +21,11 @@ export default function StickyStack({
 }: StickyStackProps) {
   const sectionRef = useRef<HTMLDivElement>(null);
   const visualsRef = useRef<HTMLDivElement>(null);
+  const reduced = useReducedMotion();
 
   useEffect(() => {
+    if (reduced) return; // settled state: visuals stack inline, no pin
+
     let ctx: { revert: () => void } | null = null;
 
     const init = async () => {
@@ -54,15 +59,13 @@ export default function StickyStack({
             onEnter: () => {
               visualEls.forEach((v, vi) => {
                 v.style.opacity = vi === i ? "1" : "0";
-                v.style.transition =
-                  "opacity 0.6s cubic-bezier(.16, 1, .3, 1)";
+                v.style.transition = `opacity 0.6s ${EASE_STANDARD_CSS}`;
               });
             },
             onEnterBack: () => {
               visualEls.forEach((v, vi) => {
                 v.style.opacity = vi === i ? "1" : "0";
-                v.style.transition =
-                  "opacity 0.6s cubic-bezier(.16, 1, .3, 1)";
+                v.style.transition = `opacity 0.6s ${EASE_STANDARD_CSS}`;
               });
             },
           });
@@ -72,7 +75,7 @@ export default function StickyStack({
 
     init();
     return () => { ctx?.revert(); };
-  }, [items.length]);
+  }, [items.length, reduced]);
 
   return (
     <section
@@ -81,15 +84,17 @@ export default function StickyStack({
       style={{ height: `${items.length * 100}vh`, position: "relative" }}
     >
       <div style={{ display: "flex", minHeight: "100vh" }}>
-        {/* Left: pinned visual */}
+        {/* Left: pinned visual (reduced motion: all visuals stack inline,
+            one per screen-height, matching each card in the right column) */}
         <div
           ref={visualsRef}
           style={{
             width: "50%",
-            height: "100vh",
+            height: reduced ? `${items.length * 100}vh` : "100vh",
             position: "relative",
             flexShrink: 0,
             display: "flex",
+            flexDirection: reduced ? "column" : undefined,
             alignItems: "center",
             justifyContent: "center",
           }}
@@ -99,14 +104,16 @@ export default function StickyStack({
               key={i}
               data-visual
               style={{
-                position: "absolute",
-                inset: 0,
+                position: reduced ? "relative" : "absolute",
+                inset: reduced ? undefined : 0,
+                width: reduced ? "100%" : undefined,
+                height: reduced ? "100vh" : undefined,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 padding: "2rem",
-                opacity: i === 0 ? 1 : 0,
-                transition: "opacity 0.6s cubic-bezier(.16, 1, .3, 1)",
+                opacity: reduced ? 1 : i === 0 ? 1 : 0,
+                transition: reduced ? undefined : `opacity 0.6s ${EASE_STANDARD_CSS}`,
               }}
             >
               {item.visual}

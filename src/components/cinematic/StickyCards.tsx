@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, type ReactNode } from "react";
+import { useReducedMotion } from "@/lib/motion/useReducedMotion";
 
 interface StickyCard {
   content: ReactNode;
@@ -18,8 +19,11 @@ export default function StickyCards({
 }: StickyCardsProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const reduced = useReducedMotion();
 
   useEffect(() => {
+    if (reduced) return; // cards render at natural scale/opacity, no pin
+
     let ctx: { revert: () => void } | null = null;
 
     const init = async () => {
@@ -60,7 +64,7 @@ export default function StickyCards({
     return () => {
       ctx?.revert();
     };
-  }, [cards.length]);
+  }, [cards.length, reduced]);
 
   return (
     <div
@@ -76,12 +80,12 @@ export default function StickyCards({
               cardRefs.current[i] = el;
             }}
             style={{
-              background: card.background || "#111114",
-              border: "1px solid rgba(255,255,255,0.06)",
+              background: card.background || "var(--card)",
+              border: "1px solid color-mix(in oklab, var(--foreground) 6%, transparent)",
               borderRadius: "20px",
               padding: "48px 40px",
               marginBottom: "24px",
-              willChange: "transform, opacity",
+              willChange: reduced ? undefined : "transform, opacity",
               transformOrigin: "center top",
             }}
           >

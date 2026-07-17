@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useState, type ReactNode } from "react";
+import { useReducedMotion } from "@/lib/motion/useReducedMotion";
+import { EASE_STANDARD_CSS } from "@/lib/motion/constants";
 
 interface FlipCardData {
   icon?: ReactNode;
@@ -20,14 +22,18 @@ interface FlipCardsProps {
 
 function FlipCard({
   card,
-  accentColor = "#4f46e5",
+  accentColor = "var(--primary)",
 }: {
   card: FlipCardData;
   accentColor: string;
 }) {
   const [flipped, setFlipped] = useState(false);
   const color = card.accentColor ?? accentColor;
+  const reduced = useReducedMotion();
 
+  // Tap/click to flip works identically on touch and fine pointers — this
+  // is an explicit state change, so it stays interactive under reduced
+  // motion, just without the animated 3D transition.
   const toggle = useCallback(() => {
     setFlipped((f) => !f);
   }, []);
@@ -50,7 +56,7 @@ function FlipCard({
           position: "relative",
           width: "100%",
           height: "100%",
-          transition: "transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)",
+          transition: reduced ? "none" : `transform 0.6s ${EASE_STANDARD_CSS}`,
           transformStyle: "preserve-3d",
           transform: flipped ? "rotateY(180deg)" : "rotateY(0)",
           willChange: "transform",
@@ -67,9 +73,9 @@ function FlipCard({
             flexDirection: "column",
             justifyContent: "flex-end",
             padding: "32px",
-            background: "rgba(255,255,255,0.03)",
-            border: "1px solid rgba(255,255,255,0.08)",
-            boxShadow: "0 8px 30px rgba(0,0,0,0.04)",
+            background: "color-mix(in oklab, var(--foreground) 3%, transparent)",
+            border: "1px solid color-mix(in oklab, var(--foreground) 8%, transparent)",
+            boxShadow: "0 8px 30px color-mix(in oklab, var(--foreground) 4%, transparent)",
           }}
         >
           {card.icon && (
@@ -88,12 +94,12 @@ function FlipCard({
               fontSize: "20px",
               fontWeight: 600,
               marginBottom: "4px",
-              color: "rgba(234,231,226,0.95)",
+              color: "var(--foreground)",
             }}
           >
             {card.frontTitle}
           </h3>
-          <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.45)" }}>
+          <p style={{ fontSize: "13px", color: "var(--muted-foreground)" }}>
             {card.frontDesc}
           </p>
         </div>
@@ -110,7 +116,7 @@ function FlipCard({
             justifyContent: "flex-end",
             padding: "32px",
             background: color,
-            color: "white",
+            color: "var(--accent-foreground)",
             transform: "rotateY(180deg)",
           }}
         >
@@ -146,7 +152,7 @@ function FlipCard({
 
 export default function FlipCards({
   cards,
-  accentColor = "#4f46e5",
+  accentColor = "var(--primary)",
   className = "",
 }: FlipCardsProps) {
   return (

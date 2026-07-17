@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
+import { useReducedMotion } from "@/lib/motion/useReducedMotion";
 
 interface VideoBackgroundProps {
   src: string;
@@ -16,11 +17,13 @@ interface VideoBackgroundProps {
  * Cinematic video background with autoplay, loop, and scroll-driven opacity.
  * Falls back to poster image if video fails to load.
  * Uses intersection observer to pause when off-screen (performance).
+ * Reduced motion: never autoplays — shows `poster` if provided, otherwise the
+ * video element's natural first frame (via `preload="auto"`).
  */
 export default function VideoBackground({
   src,
   poster,
-  overlay = "rgba(6, 4, 22, 0.4)",
+  overlay = "color-mix(in oklab, var(--foreground) 40%, transparent)",
   className = "",
   children,
   minHeight = "100vh",
@@ -29,6 +32,7 @@ export default function VideoBackground({
   const videoRef = useRef<HTMLVideoElement>(null);
   const sectionRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
+  const reduced = useReducedMotion();
 
   // Intersection observer — pause video when off-screen
   useEffect(() => {
@@ -46,17 +50,17 @@ export default function VideoBackground({
     return () => observer.disconnect();
   }, []);
 
-  // Play/pause based on visibility
+  // Play/pause based on visibility — never autoplay under reduced motion.
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
-    if (isVisible) {
+    if (isVisible && !reduced) {
       video.play().catch(() => {});
     } else {
       video.pause();
     }
-  }, [isVisible]);
+  }, [isVisible, reduced]);
 
   // Set playback rate
   useEffect(() => {

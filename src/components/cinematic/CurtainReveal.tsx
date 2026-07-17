@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, type ReactNode } from "react";
+import { useReducedMotion } from "@/lib/motion/useReducedMotion";
 
 interface CurtainRevealProps {
   leftText?: string;
@@ -18,8 +19,11 @@ export default function CurtainReveal({
   const sectionRef = useRef<HTMLDivElement>(null);
   const leftRef = useRef<HTMLDivElement>(null);
   const rightRef = useRef<HTMLDivElement>(null);
+  const reduced = useReducedMotion();
 
   useEffect(() => {
+    if (reduced) return; // curtains render already parted below
+
     let ctx: { revert: () => void } | null = null;
 
     const init = async () => {
@@ -60,7 +64,7 @@ export default function CurtainReveal({
     return () => {
       ctx?.revert();
     };
-  }, []);
+  }, [reduced]);
 
   return (
     <section
@@ -90,14 +94,14 @@ export default function CurtainReveal({
             alignItems: "center",
             justifyContent: "center",
             textAlign: "center",
-            background: "linear-gradient(135deg, #1a120a, #0d0a08)",
+            background: "linear-gradient(135deg, var(--background), var(--card))",
             padding: "40px",
           }}
         >
           {children}
         </div>
 
-        {/* Left curtain */}
+        {/* Left curtain — settled (reduced) state is fully parted off-screen */}
         <div
           ref={leftRef}
           style={{
@@ -106,14 +110,15 @@ export default function CurtainReveal({
             bottom: 0,
             left: 0,
             width: "50%",
-            background: "#0a0a0b",
+            background: "var(--background)",
             zIndex: 2,
             display: "flex",
             alignItems: "center",
             justifyContent: "flex-end",
             paddingRight: "40px",
-            borderRight: "1px solid rgba(255,255,255,0.06)",
-            willChange: "transform",
+            borderRight: "1px solid color-mix(in oklab, var(--foreground) 6%, transparent)",
+            transform: reduced ? "translateX(-100%)" : "none",
+            willChange: reduced ? undefined : "transform",
           }}
         >
           <h2
@@ -122,7 +127,7 @@ export default function CurtainReveal({
               fontWeight: 700,
               letterSpacing: "-0.04em",
               lineHeight: 0.95,
-              color: "rgba(234,231,226,0.95)",
+              color: "var(--foreground)",
               userSelect: "none",
             }}
           >
@@ -130,7 +135,7 @@ export default function CurtainReveal({
           </h2>
         </div>
 
-        {/* Right curtain */}
+        {/* Right curtain — settled (reduced) state is fully parted off-screen */}
         <div
           ref={rightRef}
           style={{
@@ -139,14 +144,15 @@ export default function CurtainReveal({
             bottom: 0,
             right: 0,
             width: "50%",
-            background: "#0a0a0b",
+            background: "var(--background)",
             zIndex: 2,
             display: "flex",
             alignItems: "center",
             justifyContent: "flex-start",
             paddingLeft: "40px",
-            borderLeft: "1px solid rgba(255,255,255,0.06)",
-            willChange: "transform",
+            borderLeft: "1px solid color-mix(in oklab, var(--foreground) 6%, transparent)",
+            transform: reduced ? "translateX(100%)" : "none",
+            willChange: reduced ? undefined : "transform",
           }}
         >
           <h2
@@ -155,7 +161,7 @@ export default function CurtainReveal({
               fontWeight: 700,
               letterSpacing: "-0.04em",
               lineHeight: 0.95,
-              color: "rgba(234,231,226,0.95)",
+              color: "var(--foreground)",
               userSelect: "none",
             }}
           >
