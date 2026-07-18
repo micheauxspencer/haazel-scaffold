@@ -1,36 +1,55 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Haazel Scaffold
 
-## Getting Started
+The Next.js base every haazel build clones (`degit micheauxspencer/haazel-scaffold#v0.2.0`).
+Next 16 · React 19 · Tailwind v4 (CSS-first) · shadcn on Base UI · GSAP + Lenis · Sanity-ready · FAL client.
 
-First, run the development server:
+> This is NOT the Next.js you know — read `AGENTS.md` and
+> `node_modules/next/dist/docs/` before writing code.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## The component library (82)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+| Group | Where | Count |
+|---|---|---|
+| Layout primitives — the anti-generic layer (LayeredHeadline, OverlapField, EditorialSplit, OffsetGrid, BleedImage, CaptionRail, ScrollingText, DeviceFrame, SectionShell) | `src/components/primitives/` | 9 |
+| Cinematic GSAP modules (scroll-driven 10 · cursor 9 · click 6 · ambient 10) | `src/components/cinematic/` | 35 |
+| Section packs — saas 11 · app 8 · leadgen 8+API · commerce 6 · shared 5 | `src/components/sections/` | 38 |
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Source of truth: [`src/components/COMPONENT_CATALOG.md`](src/components/COMPONENT_CATALOG.md)
+(`npm run check:catalog` fails on drift). Conventions:
+[`cinematic/CONVENTIONS.md`](src/components/cinematic/CONVENTIONS.md) (reduced-motion settled
+states, pointer gating, tokens-only colors) and
+[`sections/SECTION_SPEC.md`](src/components/sections/SECTION_SPEC.md) (the section contract).
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Browse everything live at **`/showcase`** (`npm run dev`) — the harness is
+auto-removed from client builds by `npm run prune`.
 
-## Learn More
+## The token pipeline
 
-To learn more about Next.js, take a look at the following resources:
+`design/tokens.json` is the machine source of truth (schema ships in the
+haazel plugin). `npm run tokens:apply` deterministically rewrites the
+HAAZEL marker regions in `globals.css` (oklch colors, fonts, motion/spacing
+tokens), `layout.tsx` (next/font codegen + color-scheme class), and
+`brand.config.ts` — plus the package name. Never hand-edit inside markers;
+`npm run tokens:check` catches drift.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Scripts
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Script | Does |
+|---|---|
+| `npm run tokens:apply` / `tokens:check` | apply/verify design tokens (`--dry-run` supported) |
+| `npm run prune -- --keep about,contact --write` | remove unused routes + demo sections; rewrites nav, Footer, sitemap registry, package name; dry-run by default |
+| `npm run gen:image` / `gen:video` | FAL asset generation (`FAL_KEY`), Kling video standard/pro |
+| `npm run frames -- <video> <name>` | ffmpeg frame extraction for CanvasHero + `manifest.json` with exact frameCount |
+| `npm run check:catalog` | catalog ↔ exports sync gate |
 
-## Deploy on Vercel
+## Per-client flow (driven by the haazel plugin)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. `npx degit micheauxspencer/haazel-scaffold#v0.2.0 <slug>` + `npm install`
+2. haazel-design-system writes `design/tokens.json` → `npm run tokens:apply`
+3. Compose pages from the catalog (sections + primitives + cinematic per the
+   archetype's motion policy)
+4. `npm run prune -- --keep <routes> --write`
+5. `npm run build` green → git commit (deployment is manual by design)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Env (`.env.example`): Sanity project vars, `FAL_KEY`, `NEXT_PUBLIC_SITE_URL`,
+`RESEND_API_KEY` + `QUOTE_TO_EMAIL` (quote form delivery).

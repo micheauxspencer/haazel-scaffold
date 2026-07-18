@@ -77,9 +77,11 @@ export default function DeviceFrame({
     <div className={cn("relative", className)}>
       <div
         aria-hidden
-        className="absolute -inset-10 -z-10 rounded-[50%] blur-3xl"
+        // Halo spread comes from blur (ink overflow) — scaled/inset boxes
+        // would widen the document's scrollable area on small screens.
+        className="absolute inset-0 -z-10 rounded-[50%] blur-3xl"
         style={{
-          background: `radial-gradient(ellipse at center, color-mix(in oklab, ${glowColor} 22%, transparent), transparent 70%)`,
+          background: `radial-gradient(ellipse at center, color-mix(in oklab, ${glowColor} 30%, transparent), transparent 72%)`,
         }}
       />
       {frame}

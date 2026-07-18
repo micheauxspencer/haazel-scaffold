@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 import { useReducedMotion } from "@/lib/motion/useReducedMotion";
 
 interface MeshBlob {
@@ -44,7 +44,8 @@ export default function MeshGradient({
   className = "",
 }: MeshGradientProps) {
   const reduced = useReducedMotion();
-  const uid = `mesh-${Math.random().toString(36).slice(2, 6)}`;
+  // useId is SSR-stable; Math.random() here caused hydration mismatches.
+  const uid = `mesh-${useId().replace(/[^a-zA-Z0-9]/g, "")}`;
 
   return (
     <>

@@ -141,8 +141,9 @@ export default function SaasHero({
                 data-hero-rise
                 className={cn(
                   rise,
-                  "mt-[calc(var(--content-gap)*1.25)] flex max-w-xl divide-x",
-                  "[&>div]:px-6 [&>div:first-child]:pl-0",
+                  // Stacks on narrow screens — an unwrapped divide-x row overflows 375px.
+                  "mt-[calc(var(--content-gap)*1.25)] flex max-w-xl flex-col gap-5 sm:flex-row sm:gap-0 sm:divide-x",
+                  "[&>div]:sm:px-6 [&>div:first-child]:sm:pl-0",
                   "divide-[color-mix(in_oklab,var(--foreground)_12%,transparent)]",
                 )}
               >

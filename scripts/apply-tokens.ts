@@ -320,14 +320,18 @@ function layoutFontsBody(t: Tokens): string[] {
       `  subsets: ["latin"],`,
       `  display: "swap",`,
     ];
-    if (spec.weights?.length) {
+    const hasAxes = Boolean(spec.axes && Object.keys(spec.axes).length);
+    // next/font: axes require the variable font, which forbids numeric
+    // weights ("Axes can only be defined … when weight is nonexistent or
+    // set to `variable`"). Axes present → load variable, skip weights.
+    if (spec.weights?.length && !hasAxes) {
       opts.push(`  weight: [${spec.weights.map((w) => `"${w}"`).join(", ")}],`);
     }
     if (spec.styles?.length && spec.styles.some((s) => s !== "normal")) {
       opts.push(`  style: [${spec.styles.map((s) => `"${s}"`).join(", ")}],`);
     }
-    if (spec.axes && Object.keys(spec.axes).length) {
-      opts.push(`  axes: [${Object.keys(spec.axes).map((a) => `"${a}"`).join(", ")}],`);
+    if (hasAxes) {
+      opts.push(`  axes: [${Object.keys(spec.axes!).map((a) => `"${a}"`).join(", ")}],`);
     }
     out.push(`const ${constName} = ${googleFontIdentifier(family)}({`);
     out.push(...opts);
